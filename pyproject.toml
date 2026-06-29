@@ -1,0 +1,5 @@
+[tool.taskipy.tasks]
+run = "python manage.py runserver"
+migrate = "python manage.py makemigrations && python manage.py migrate"
+flush = "python manage.py flush"
+seed = "python seed.py"
