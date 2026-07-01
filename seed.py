@@ -1,35 +1,33 @@
 import os
-import django
 import random
 import uuid
+import django
+from faker import Faker
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "commune_project.settings")
 django.setup()
 
-import factory
-from faker import Faker
-from core.models import CivilServant, JobDetail
+from core.serializers import CivilServantSerializer
 
 fake = Faker("en_US")
 
-# ─────────────────────────────────────────
-# CivilServant Factory
-# ─────────────────────────────────────────
+GRADE_ECHELON_MAP = {
+    "4G": range(1, 11),
+    "3G": range(1, 11),
+    "2G": range(1, 12),
+    "1G": range(1, 14),
+}
 
 
-class CivilServantFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = CivilServant
-
-    CIN = factory.LazyFunction(lambda: f"LA{uuid.uuid4().hex[:6].upper()}")
-    PPR = factory.LazyFunction(lambda: f"PPR{uuid.uuid4().hex[:7].upper()}")
-    nom = factory.LazyFunction(lambda: fake.last_name())
-    prenom = factory.LazyFunction(lambda: fake.first_name())
-    date_de_naissance = factory.LazyFunction(
-        lambda: fake.date_of_birth(minimum_age=25, maximum_age=60)
-    )
-    lieu_de_naissance = factory.LazyFunction(
-        lambda: random.choice(
+def build_payload():
+    grade = random.choice(["1G", "2G", "3G", "4G"])
+    return {
+        "CIN": f"LA{uuid.uuid4().hex[:6].upper()}",
+        "PPR": f"PPR{uuid.uuid4().hex[:7].upper()}",
+        "nom": fake.last_name(),
+        "prenom": fake.first_name(),
+        "date_de_naissance": fake.date_of_birth(minimum_age=25, maximum_age=60),
+        "lieu_de_naissance": random.choice(
             [
                 "Rabat",
                 "Casablanca",
@@ -41,57 +39,30 @@ class CivilServantFactory(factory.django.DjangoModelFactory):
                 "Oujda",
                 "Larache",
             ]
-        )
-    )
-    genre = factory.LazyFunction(lambda: random.choice(["man", "woman"]))
-    situation_familiale = factory.LazyFunction(
-        lambda: random.choice(["single", "married", "divorced"])
-    )
-    n_enfants = factory.LazyFunction(lambda: random.randint(0, 5))
-    address = factory.LazyFunction(lambda: fake.address())
+        ),
+        "genre": random.choice(["man", "woman"]),
+        "situation_familiale": random.choice(["single", "married", "divorced"]),
+        "n_enfants": random.randint(0, 5),
+        "address": fake.address(),
+        "job_detail": {
+            "zone": random.choice(["A", "B", "C"]),
+            "category": "technicien",
+            "grade": grade,
+            "echelon": random.choice(list(GRADE_ECHELON_MAP[grade])),
+            "mutuelle": "CNOPS",
+        },
+    }
 
-
-# ─────────────────────────────────────────
-# JobDetail Factory
-# ─────────────────────────────────────────
-
-# Valid echelon ranges per grade (based on ECHELON_INDICE_TABLEAU)
-GRADE_ECHELON_MAP = {
-    "4G": range(1, 11),  # echelons 1–10
-    "3G": range(1, 11),  # echelons 1–10
-    "2G": range(1, 12),  # echelons 1–11
-    "1G": range(1, 14),  # echelons 1–13
-}
-
-
-class JobDetailFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = JobDetail
-
-    fonct = factory.SubFactory(CivilServantFactory)
-    zone = factory.LazyFunction(lambda: random.choice(["A", "B", "C"]))
-    category = factory.LazyFunction(
-        lambda: "technicien"
-    )  # ✅ matches CATEGORIES choices
-    grade = factory.LazyFunction(lambda: random.choice(["1G", "2G", "3G", "4G"]))
-    echelon = factory.LazyAttribute(
-        lambda obj: random.choice(list(GRADE_ECHELON_MAP[obj.grade]))
-    )
-    mutuelle = factory.LazyFunction(
-        lambda: "CNOPS"
-    )  # ✅ fixed typo 'mutelle' → 'mutuelle', matches MUTUELLE choices
-
-
-# ─────────────────────────────────────────
-# Seed the database
-# ─────────────────────────────────────────
 
 if __name__ == "__main__":
-    COUNT = 20  # change this to however many records you want
+    COUNT = 20
 
-    print(f"Creating {COUNT} civil servants with job details...")
+    print(f"Creating {COUNT} civil servants with linked job and salary details...")
 
     for _ in range(COUNT):
-        JobDetailFactory()  # also creates a CivilServant via SubFactory
+        payload = build_payload()
+        serializer = CivilServantSerializer(data=payload)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-    print(f"✅ Done! {COUNT} records inserted.")
+    print(f"✅ Done! {COUNT} civil servants created with job and salary details.")

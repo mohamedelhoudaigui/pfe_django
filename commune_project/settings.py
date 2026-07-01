@@ -118,6 +118,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Larache Commune API",
     "DESCRIPTION": "a project that aims to make operations automatique in commune",
     "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 

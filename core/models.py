@@ -131,3 +131,34 @@ class JobDetail(models.Model):
     def is_exceptional(self):
         """درجة استثنائية only exists in 2G rank 11"""
         return self.grade == "2G" and self.echelon == 11
+
+
+class SalaryDetail(models.Model):
+    civil_servant = models.ForeignKey(
+        CivilServant,
+        on_delete=models.CASCADE,
+        related_name="salary_details",
+    )
+    base_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    zone_indemnity = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    tsp = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    family_allowance = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    annual_gross_salary = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0
+    )
+    monthly_gross_salary = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0
+    )
+    cmr = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    amo = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    sm = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    ccd = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    income_reduction = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    taxable_income = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    income_tax = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    net_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Salary detail for {self.civil_servant}"
