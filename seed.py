@@ -7,7 +7,7 @@ from faker import Faker
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "commune_project.settings")
 django.setup()
 
-from core.serializers import CivilServantSerializer
+from core.services.CivilServantService import CivilServantService
 
 fake = Faker("en_US")
 
@@ -61,8 +61,23 @@ if __name__ == "__main__":
 
     for _ in range(COUNT):
         payload = build_payload()
-        serializer = CivilServantSerializer(data=payload)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        civil_servant_data = {
+            "CIN": payload["CIN"],
+            "PPR": payload["PPR"],
+            "nom": payload["nom"],
+            "prenom": payload["prenom"],
+            "date_de_naissance": payload["date_de_naissance"],
+            "lieu_de_naissance": payload["lieu_de_naissance"],
+            "genre": payload["genre"],
+            "situation_familiale": payload["situation_familiale"],
+            "n_enfants": payload["n_enfants"],
+            "address": payload["address"],
+        }
+        job_detail_data = payload["job_detail"]
+
+        CivilServantService.create_civil_servant_with_job_and_salary(
+            civil_servant_data=civil_servant_data,
+            job_detail_data=job_detail_data,
+        )
 
     print(f"✅ Done! {COUNT} civil servants created with job and salary details.")
