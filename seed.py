@@ -18,6 +18,8 @@ GRADE_ECHELON_MAP = {
     "1G": range(1, 14),
 }
 
+ECHELLE_SEQ = [i for i in range(1, 13)]
+
 
 def build_payload():
     grade = random.choice(["1G", "2G", "3G", "4G"])
@@ -46,8 +48,9 @@ def build_payload():
         "address": fake.address(),
         "job_detail": {
             "zone": random.choice(["A", "B", "C"]),
-            "category": "technicien",
+            "categorie": "technicien",
             "grade": grade,
+            "echelle": random.choice(ECHELLE_SEQ),
             "echelon": random.choice(list(GRADE_ECHELON_MAP[grade])),
             "mutuelle": "CNOPS",
         },

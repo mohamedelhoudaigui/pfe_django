@@ -5,19 +5,47 @@ from .models import CivilServant, JobDetail, SalaryDetail
 class JobDetailCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobDetail
-        fields = ["zone", "category", "grade", "echelon", "mutuelle"]
+        fields = ["zone", "categorie", "grade", "echelle", "echelon", "mutuelle"]
 
 
 class JobDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobDetail
-        fields = "__all__"
+        fields = [
+            "id",
+            "zone",
+            "categorie",
+            "grade",
+            "echelle",
+            "echelon",
+            "indice",
+            "mutuelle",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class SalaryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalaryDetail
-        fields = "__all__"
+        fields = [
+            "id",
+            "base_salary",
+            # "indemnities",
+            "tsp",
+            "family_allowance",
+            "annual_gross_salary",
+            "monthly_gross_salary",
+            "cmr",
+            "amo",
+            "sm",
+            "ccd",
+            "fos",
+            "income_tax",
+            "net_salary",
+            "created_at",
+            "updated_at",
+        ]
 
 
 class CivilServantSerializer(serializers.ModelSerializer):
@@ -25,4 +53,18 @@ class CivilServantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CivilServant
-        exclude = ["indemnities"]
+        fields = [
+            "id",
+            "CIN",
+            "PPR",
+            "nom",
+            "prenom",
+            "date_de_naissance",
+            "lieu_de_naissance",
+            "genre",
+            "situation_familiale",
+            "n_enfants",
+            "address",
+            "created_at",
+            "updated_at",
+        ]

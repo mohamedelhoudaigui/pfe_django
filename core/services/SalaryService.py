@@ -1,4 +1,3 @@
-from tokenize import String
 from typing import Tuple, Dict
 from decimal import Decimal, ROUND_HALF_UP
 from ..models import CivilServant, SalaryDetail
@@ -36,14 +35,14 @@ class SalaryService:
     def get_base_salary(self) -> Decimal:
         return self._q(self.job_detail.indice * self.BASE_CONST_1 + self.BASE_CONST_2)
 
-    def get_indemnities(self, TB) -> Dict[str, str]:
-        zone_indemnity = str(self._q(TB * self.ZONE_RATE[self.job_detail.zone]))
+    def get_indemnities(self, TB) -> Dict[str, Decimal]:
+        zone_indemnity = self._q(TB * self.ZONE_RATE[self.job_detail.zone])
         indemnities = self.grade_indemnities.get_indemnities()
         indemnities["zone"] = zone_indemnity
         return indemnities
 
     def get_TSP(self, TB, indemnities) -> Decimal:
-        return self._q(TB + sum(Decimal(v) for v in indemnities.values()))
+        return self._q(TB + sum(indemnities.values()))
 
     def get_AF(self, n_enfants) -> Decimal:
         if n_enfants <= 3:
@@ -54,11 +53,12 @@ class SalaryService:
             ) * Decimal("100")
         else:
             AF = Decimal("3") * Decimal("300") + Decimal("3") * Decimal("100")
-        return self._q(AF)
+            # yearly value
+        return self._q(AF * 12)
 
     def get_monthly_deductions(
-        self, TSP: Decimal
-    ) -> Tuple[Decimal, Decimal, Decimal, Decimal]:
+        self, TSP: Decimal, echelle: str
+    ) -> Tuple[Decimal, Decimal, Decimal, Decimal, Decimal]:
         CMR = self._q(TSP * Decimal("0.14") / Decimal(12))
         AMO = max(
             Decimal("70"),
@@ -66,7 +66,16 @@ class SalaryService:
         )
         SM = min(Decimal("80"), self._q(TSP * Decimal("0.015") / Decimal("12")))
         CCD = min(Decimal("100"), self._q(TSP * Decimal("0.01") / Decimal("12")))
-        return CMR, AMO, SM, CCD
+        FOS = 0
+        if echelle <= 6:
+            FOS = self._q("25")
+        if echelle <= 10:
+            FOS = self._q("50")
+        if echelle <= 11:
+            FOS = self._q("80")
+        elif echelle > 11:
+            FOS = self._q("120")
+        return (CMR, AMO, SM, CCD, FOS)
 
     def get_income_reduction(self, TSP: Decimal) -> Decimal:
         if TSP <= Decimal("78000"):
@@ -78,19 +87,17 @@ class SalaryService:
     def get_taxable_income(
         self,
         TSP: Decimal,
-        monthly_deductions: Tuple[Decimal, Decimal, Decimal, Decimal],
+        monthly_deductions: Tuple[Decimal, Decimal, Decimal, Decimal, Decimal],
     ) -> Decimal:
-        CMR, AMO, SM, CCD = monthly_deductions
+        CMR, AMO, SM, CCD, FOS = monthly_deductions
         return self._q(
-            TSP
-            - self.get_income_reduction(TSP)
-            - (CMR + AMO + SM + CCD) * Decimal("12")
+            TSP - self.get_income_reduction(TSP) - (CMR + AMO + SM + CCD + FOS) * 12
         )
 
     def get_income_tax(
         self,
         TSP: Decimal,
-        monthly_deductions: Tuple[Decimal, Decimal, Decimal, Decimal],
+        monthly_deductions: Tuple[Decimal, Decimal, Decimal, Decimal, Decimal],
         n_enfants: int,
         is_married: Decimal,
     ) -> Decimal:
@@ -107,6 +114,7 @@ class SalaryService:
 
     def save_to_model(self) -> SalaryDetail:
         n_enfants = self.civil_servant.n_enfants
+        echelle = self.job_detail.echelle
         is_married = (
             Decimal("1")
             if self.civil_servant.situation_familiale == "married"
@@ -121,11 +129,11 @@ class SalaryService:
         TEA = TSP + AF
         TEM = TEA / Decimal("12")
 
-        monthly_deductions = self.get_monthly_deductions(TSP)
-        CMR, AMO, SM, CCD = monthly_deductions
+        monthly_deductions = self.get_monthly_deductions(TSP, echelle)
+        CMR, AMO, SM, CCD, FOS = monthly_deductions
         IR = self.get_income_tax(TSP, monthly_deductions, n_enfants, is_married)
 
-        net_salary = self._q(TEM - CMR - AMO - SM - CCD - IR)
+        net_salary = self._q(TEM - CMR - AMO - SM - CCD - FOS - IR)
 
         salary_detail = SalaryDetail.objects.create(
             civil_servant=self.civil_servant,
@@ -139,6 +147,7 @@ class SalaryService:
             amo=AMO,
             sm=SM,
             ccd=CCD,
+            fos=FOS,
             income_reduction=self.get_income_reduction(TSP),
             taxable_income=self.get_taxable_income(TSP, monthly_deductions),
             income_tax=IR,

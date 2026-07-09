@@ -38,8 +38,12 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    # for documentation
     "drf_spectacular",
+    # main app
     "core",
+    # sql explorer
+    "explorer",
 ]
 
 MIDDLEWARE = [
@@ -113,6 +117,11 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# explorer settings
+
+EXPLORER_CONNECTIONS = {"Default": "default"}
+EXPLORER_DEFAULT_CONNECTION = "default"
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Larache Commune API",

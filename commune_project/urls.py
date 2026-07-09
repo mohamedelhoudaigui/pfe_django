@@ -34,5 +34,6 @@ urlpatterns = [
     ),
     # ReDoc (alternative documentation UI)
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path('explorer/', include('explorer.urls')),
     path("api/", include("core.urls")),
 ]

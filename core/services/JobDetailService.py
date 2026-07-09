@@ -62,7 +62,7 @@ class JobDetailService:
 
     @staticmethod
     def get_jobdetail(civil_servant: CivilServant) -> JobDetail:
-        job_detail = JobDetail.objects.get(fonct=civil_servant)
+        job_detail = JobDetail.objects.get(fonctionnaire=civil_servant)
         return job_detail
 
     @staticmethod
@@ -91,7 +91,13 @@ class JobDetailService:
 
     @staticmethod
     def create_job_detail(
-        civil_servant, zone: str, category: str, grade: str, echelon: int, mutuelle: str
+        civil_servant,
+        zone: str,
+        categorie: str,
+        grade: str,
+        echelle: int,
+        echelon: int,
+        mutuelle: str,
     ) -> JobDetail:
         """
         Create a JobDetail with calculated indice.
@@ -99,7 +105,7 @@ class JobDetailService:
         Args:
             civil_servant: CivilServant instance
             zone: Zone code ('A', 'B', or 'C')
-            category: Job category
+            categorie: Job categorie
             grade: Grade code ('4G', '3G', '2G', '1G')
             echelon: Echelon level (1-13)
             mutuelle: Mutuelle code
@@ -113,10 +119,11 @@ class JobDetailService:
         indice = JobDetailService.calculate_indice(grade, echelon)
 
         job_detail = JobDetail(
-            fonct=civil_servant,
+            fonctionnaire=civil_servant,
             zone=zone,
-            category=category,
+            categorie=categorie,
             grade=grade,
+            echelle=echelle,
             echelon=echelon,
             indice=indice,
             mutuelle=mutuelle,
@@ -128,8 +135,9 @@ class JobDetailService:
     def update_job_detail(
         job_detail: JobDetail,
         zone: str = None,
-        category: str = None,
+        categorie: str = None,
         grade: str = None,
+        echelle: int = None,
         echelon: int = None,
         mutuelle: str = None,
     ) -> JobDetail:
@@ -139,7 +147,7 @@ class JobDetailService:
         Args:
             job_detail: JobDetail instance to update
             zone: New zone (optional)
-            category: New category (optional)
+            categorie: New categorie (optional)
             grade: New grade (optional)
             echelon: New echelon (optional)
             mutuelle: New mutuelle (optional)
@@ -152,10 +160,12 @@ class JobDetailService:
         """
         if zone is not None:
             job_detail.zone = zone
-        if category is not None:
-            job_detail.category = category
+        if categorie is not None:
+            job_detail.categorie = categorie
         if mutuelle is not None:
             job_detail.mutuelle = mutuelle
+        if echelle is not None:
+            job_detail.echelle = echelle
 
         # If grade or echelon changed, recalculate indice
         if grade is not None or echelon is not None:

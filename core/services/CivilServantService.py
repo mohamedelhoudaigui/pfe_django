@@ -23,7 +23,7 @@ class CivilServantService:
                 (CIN, PPR, nom, prenom, date_de_naissance, lieu_de_naissance,
                  genre, situation_familiale, n_enfants, address)
             job_detail_data: Optional dictionary with JobDetail fields
-                (zone, category, grade, echelon, mutuelle)
+                (zone, categorie, grade, echelon, mutuelle)
 
         Returns:
             Created CivilServant instance with related objects
@@ -40,8 +40,9 @@ class CivilServantService:
             JobDetailService.create_job_detail(
                 civil_servant=civil_servant,
                 zone=job_detail_data["zone"],
-                category=job_detail_data["category"],
+                categorie=job_detail_data["categorie"],
                 grade=job_detail_data["grade"],
+                echelle=job_detail_data["echelle"],
                 echelon=job_detail_data["echelon"],
                 mutuelle=job_detail_data["mutuelle"],
             )

@@ -52,7 +52,7 @@ class JobDetailView(ModelViewSet):
         civil_servant_id = self.kwargs.get("civil_servant_id")
         if not civil_servant_id:
             return JobDetail.objects.none()
-        return JobDetail.objects.filter(fonct=civil_servant_id)
+        return JobDetail.objects.filter(fonctionnaire=civil_servant_id)
 
 
 class SalaryDetailView(ReadOnlyModelViewSet):
