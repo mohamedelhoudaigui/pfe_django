@@ -1,4 +1,5 @@
 from ..models import CivilServant, JobDetail
+from django.shortcuts import get_object_or_404
 
 
 class JobDetailService:
@@ -62,8 +63,15 @@ class JobDetailService:
 
     @staticmethod
     def get_jobdetail(civil_servant: CivilServant) -> JobDetail:
-        job_detail = JobDetail.objects.get(fonctionnaire=civil_servant)
-        return job_detail
+        return get_object_or_404(JobDetail, civil_servant=civil_servant)
+
+    @staticmethod
+    def get_job_detail_with_id(id: int) -> JobDetail:
+        return get_object_or_404(JobDetail, civil_servant__id=id)
+
+    @staticmethod
+    def get_job_detail_with_cin(cin: str) -> JobDetail:
+        return get_object_or_404(JobDetail, civil_servant__CIN=cin)
 
     @staticmethod
     def calculate_indice(grade: str, echelon: int) -> int:
@@ -90,25 +98,14 @@ class JobDetailService:
         return grade_table[echelon]
 
     @staticmethod
-    def create_job_detail(
-        civil_servant,
-        zone: str,
-        categorie: str,
-        grade: str,
-        echelle: int,
-        echelon: int,
-        mutuelle: str,
-    ) -> JobDetail:
+    def create_job_detail(civil_servant, job_detail_data: dict) -> JobDetail:
         """
         Create a JobDetail with calculated indice.
 
         Args:
             civil_servant: CivilServant instance
-            zone: Zone code ('A', 'B', or 'C')
-            categorie: Job categorie
-            grade: Grade code ('4G', '3G', '2G', '1G')
-            echelon: Echelon level (1-13)
-            mutuelle: Mutuelle code
+            job_detail_data: Dict with keys zone, categorie, grade,
+                echelle, echelon, mutuelle
 
         Returns:
             Created JobDetail instance
@@ -116,41 +113,28 @@ class JobDetailService:
         Raises:
             ValueError: If validation fails
         """
-        indice = JobDetailService.calculate_indice(grade, echelon)
+        indice = JobDetailService.calculate_indice(
+            job_detail_data["grade"], job_detail_data["echelon"]
+        )
 
         job_detail = JobDetail(
-            fonctionnaire=civil_servant,
-            zone=zone,
-            categorie=categorie,
-            grade=grade,
-            echelle=echelle,
-            echelon=echelon,
+            civil_servant=civil_servant,
             indice=indice,
-            mutuelle=mutuelle,
+            **job_detail_data,
         )
         job_detail.save()
+
         return job_detail
 
     @staticmethod
-    def update_job_detail(
-        job_detail: JobDetail,
-        zone: str = None,
-        categorie: str = None,
-        grade: str = None,
-        echelle: int = None,
-        echelon: int = None,
-        mutuelle: str = None,
-    ) -> JobDetail:
+    def update_job_detail(job_detail: JobDetail, job_detail_updates: dict) -> JobDetail:
         """
         Update a JobDetail and recalculate indice if grade/echelon change.
 
         Args:
             job_detail: JobDetail instance to update
-            zone: New zone (optional)
-            categorie: New categorie (optional)
-            grade: New grade (optional)
-            echelon: New echelon (optional)
-            mutuelle: New mutuelle (optional)
+            job_detail_updates: Dict with any subset of zone, categorie,
+                grade, echelle, echelon, mutuelle
 
         Returns:
             Updated JobDetail instance
@@ -158,24 +142,13 @@ class JobDetailService:
         Raises:
             ValueError: If validation fails
         """
-        if zone is not None:
-            job_detail.zone = zone
-        if categorie is not None:
-            job_detail.categorie = categorie
-        if mutuelle is not None:
-            job_detail.mutuelle = mutuelle
-        if echelle is not None:
-            job_detail.echelle = echelle
+        for key, value in job_detail_updates.items():
+            setattr(job_detail, key, value)
 
         # If grade or echelon changed, recalculate indice
-        if grade is not None or echelon is not None:
-            new_grade = grade if grade is not None else job_detail.grade
-            new_echelon = echelon if echelon is not None else job_detail.echelon
-
-            job_detail.grade = new_grade
-            job_detail.echelon = new_echelon
+        if "grade" in job_detail_updates or "echelon" in job_detail_updates:
             job_detail.indice = JobDetailService.calculate_indice(
-                new_grade, new_echelon
+                job_detail.grade, job_detail.echelon
             )
 
         job_detail.save()

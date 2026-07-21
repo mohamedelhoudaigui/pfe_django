@@ -47,7 +47,7 @@ class JobDetail(models.Model):
     ECHELON = [(i, str(i)) for i in range(1, 14)]
     MUTUELLE = [("CNOPS", "CNOPS")]
 
-    fonctionnaire = models.OneToOneField(
+    civil_servant = models.OneToOneField(
         "CivilServant", on_delete=models.CASCADE, related_name="JobDetail"
     )
 
@@ -62,7 +62,7 @@ class JobDetail(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.fonctionnaire} — {self.grade} / Echelon {self.echelon} / Indice {self.indice}"
+        return f"{self.civil_servant} — {self.grade} / Echelon {self.echelon} / Indice {self.indice}"
 
     @property
     def exceptionelle(self):
@@ -75,10 +75,8 @@ class JobDetail(models.Model):
 
 
 class SalaryDetail(models.Model):
-    civil_servant = models.ForeignKey(
-        CivilServant,
-        on_delete=models.CASCADE,
-        related_name="salary_details",
+    civil_servant = models.OneToOneField(
+        "CivilServant", on_delete=models.CASCADE, related_name="SalaryDetail"
     )
     base_salary = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     indemnities = models.JSONField(default=dict, encoder=DjangoJSONEncoder)

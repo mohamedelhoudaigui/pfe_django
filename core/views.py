@@ -1,65 +1,92 @@
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import CivilServant, JobDetail, SalaryDetail
 from .serializers import (
     CivilServantSerializer,
     JobDetailSerializer,
     SalaryDetailSerializer,
 )
-from .services.CivilServantService import CivilServantService
+from .services.CivilServantService import (
+    CivilServantService,
+    JobDetailService,
+    SalaryService,
+)
 
 
-class CivilServantView(ModelViewSet):
+class CivilServantView(APIView):
     serializer_class = CivilServantSerializer
-    queryset = CivilServant.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        """
-        Override create to use the service layer for orchestration.
-        """
-        serializer = self.get_serializer(data=request.data)
+    def get(self, request):
+        queryset = CivilServantService.get_all_civil_servants()
+        return Response(self.serializer_class(queryset, many=True).data)
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        # Extract civil servant and job detail data
-        civil_servant_data = {
-            k: v for k, v in serializer.validated_data.items() if k != "job_detail"
-        }
-        job_detail_data = serializer.validated_data.get("job_detail")
+        civil_servant_data = dict(serializer.validated_data)
+        job_detail_data = civil_servant_data.pop("job_detail", None)
 
-        # Use service to create civil servant with job and salary
-        try:
-            civil_servant = (
-                CivilServantService.create_civil_servant_with_job_and_salary(
-                    civil_servant_data=civil_servant_data,
-                    job_detail_data=job_detail_data,
-                )
-            )
-            response_serializer = CivilServantSerializer(civil_servant)
-            return Response(response_serializer.data, status=status.HTTP_201_CREATED)
-        except ValueError as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        queryset = CivilServantService.create_civil_servant_with_job_and_salary(
+            civil_servant_data=civil_servant_data,
+            job_detail_data=job_detail_data,
+        )
 
-    def get_queryset(self):
-        """Return optimized queryset with related objects."""
-        return CivilServantService.get_all_civil_servants()
+        return Response(
+            self.serializer_class(queryset).data, status=status.HTTP_201_CREATED
+        )
 
 
-class JobDetailView(ModelViewSet):
+class CivilServantPKView(APIView):
+    serializer_class = CivilServantSerializer
+
+    def get(self, request, id=None, CIN=None):
+        queryset = None
+        if id is not None:
+            queryset = CivilServantService.get_civil_servant_with_id(id)
+        elif CIN is not None:
+            queryset = CivilServantService.get_civil_servant_with_CIN(CIN)
+        if not queryset:
+            return Response()
+        return Response(self.serializer_class(queryset).data)
+
+    def patch(self, request, id):
+        serializer = self.serializer_class(data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+
+        civil_servant_updates = dict(serializer.validated_data)
+        job_detail_updates = civil_servant_updates.pop("job_detail", None)
+
+        updated_civil_servant = CivilServantService.update_civil_servant(
+            civil_servant_id=id,
+            civil_servant_updates=civil_servant_updates,
+            job_detail_updates=job_detail_updates,
+        )
+
+        return Response(self.serializer_class(updated_civil_servant).data)
+
+
+class JobDetailPKView(APIView):
     serializer_class = JobDetailSerializer
 
-    def get_queryset(self):
-        civil_servant_id = self.kwargs.get("civil_servant_id")
-        if not civil_servant_id:
-            return JobDetail.objects.none()
-        return JobDetail.objects.filter(fonctionnaire=civil_servant_id)
+    def get(self, request, id=None, CIN=None):
+        queryset = None
+        if id is not None:
+            queryset = JobDetailService.get_job_detail_with_id(id)
+        elif CIN is not None:
+            queryset = JobDetailService.get_job_detail_with_CIN(CIN)
+
+        return Response(self.serializer_class(queryset).data)
 
 
-class SalaryDetailView(ReadOnlyModelViewSet):
+class SalaryDetailPKView(APIView):
     serializer_class = SalaryDetailSerializer
 
-    def get_queryset(self):
-        civil_servant_id = self.kwargs.get("civil_servant_id")
-        if not civil_servant_id:
-            return SalaryDetail.objects.none()
-        return SalaryDetail.objects.filter(civil_servant=civil_servant_id)
+    def get(self, request, id=None, CIN=None):
+        queryset = None
+        if id is not None:
+            queryset = SalaryService.get_salary_with_id(id)
+        elif CIN is not None:
+            queryset = SalaryService.get_salary_with_CIN(CIN)
+
+        return Response(self.serializer_class(queryset).data)

@@ -2,26 +2,16 @@ from rest_framework import serializers
 from .models import CivilServant, JobDetail, SalaryDetail
 
 
-class JobDetailCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = JobDetail
-        fields = ["zone", "categorie", "grade", "echelle", "echelon", "mutuelle"]
-
-
 class JobDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = JobDetail
         fields = [
-            "id",
             "zone",
             "categorie",
             "grade",
             "echelle",
             "echelon",
-            "indice",
             "mutuelle",
-            "created_at",
-            "updated_at",
         ]
 
 
@@ -29,7 +19,6 @@ class SalaryDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = SalaryDetail
         fields = [
-            "id",
             "base_salary",
             # "indemnities",
             "tsp",
@@ -43,18 +32,15 @@ class SalaryDetailSerializer(serializers.ModelSerializer):
             "fos",
             "income_tax",
             "net_salary",
-            "created_at",
-            "updated_at",
         ]
 
 
 class CivilServantSerializer(serializers.ModelSerializer):
-    job_detail = JobDetailCreateSerializer(write_only=True, required=False)
+    job_detail = JobDetailSerializer(write_only=True, required=False)
 
     class Meta:
         model = CivilServant
         fields = [
-            "id",
             "CIN",
             "PPR",
             "nom",
@@ -65,6 +51,5 @@ class CivilServantSerializer(serializers.ModelSerializer):
             "situation_familiale",
             "n_enfants",
             "address",
-            "created_at",
-            "updated_at",
+            "job_detail",
         ]

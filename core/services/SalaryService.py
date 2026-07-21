@@ -155,3 +155,15 @@ class SalaryService:
         )
 
         return salary_detail
+
+    @staticmethod
+    def get_job_detail_with_id(id: int) -> SalaryDetail:
+        civil_servant = CivilServant.objects.get(id=id)
+        job_detail = SalaryDetail.objects.get(civil_servant=civil_servant)
+        return job_detail
+
+    @staticmethod
+    def get_job_detail_with_CIN(CIN: str) -> SalaryDetail:
+        civil_servant = CivilServant.objects.get(CIN=CIN)
+        job_detail = SalaryDetail.objects.get(civil_servant=civil_servant)
+        return job_detail

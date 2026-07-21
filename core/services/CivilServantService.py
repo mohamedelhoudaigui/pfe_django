@@ -2,6 +2,7 @@ from django.db import transaction
 from ..models import CivilServant, JobDetail, SalaryDetail
 from .JobDetailService import JobDetailService
 from .SalaryService import SalaryService
+from django.shortcuts import get_object_or_404
 
 
 class CivilServantService:
@@ -10,7 +11,7 @@ class CivilServantService:
     @staticmethod
     @transaction.atomic
     def create_civil_servant_with_job_and_salary(
-        civil_servant_data: dict, job_detail_data: dict = None
+        civil_servant_data: dict, job_detail_data: dict
     ) -> CivilServant:
         """
         Create a civil servant with optional job detail and salary detail.
@@ -36,53 +37,23 @@ class CivilServantService:
         civil_servant = CivilServant.objects.create(**civil_servant_data)
 
         # If job detail data is provided, create job detail and salary
-        if job_detail_data:
-            JobDetailService.create_job_detail(
-                civil_servant=civil_servant,
-                zone=job_detail_data["zone"],
-                categorie=job_detail_data["categorie"],
-                grade=job_detail_data["grade"],
-                echelle=job_detail_data["echelle"],
-                echelon=job_detail_data["echelon"],
-                mutuelle=job_detail_data["mutuelle"],
-            )
+        JobDetailService.create_job_detail(civil_servant, job_detail_data)
 
-            # Create salary detail based on job detail
-            SalaryService(civil_servant).save_to_model()
+        SalaryService(civil_servant).save_to_model()
 
         return civil_servant
 
     @staticmethod
-    def get_civil_servant_with_related(civil_servant_id: int) -> CivilServant:
-        """
-        Retrieve a civil servant with all related objects (optimized query).
+    def get_civil_servant_with_id(id: int) -> CivilServant:
+        return get_object_or_404(CivilServant, id=id)
 
-        Args:
-            civil_servant_id: ID of the civil servant
-
-        Returns:
-            CivilServant instance with prefetched related objects
-
-        Raises:
-            CivilServant.DoesNotExist: If civil servant not found
-        """
-        return (
-            CivilServant.objects.select_related("JobDetail")
-            .prefetch_related("salary_details")
-            .get(id=civil_servant_id)
-        )
+    @staticmethod
+    def get_civil_servant_with_CIN(CIN: str) -> CivilServant:
+        return get_object_or_404(CivilServant, CIN=CIN)
 
     @staticmethod
     def get_all_civil_servants() -> list:
-        """
-        Retrieve all civil servants with optimized queries.
-
-        Returns:
-            QuerySet of CivilServant instances with prefetched related objects
-        """
-        return CivilServant.objects.select_related("JobDetail").prefetch_related(
-            "salary_details"
-        )
+        return CivilServant.objects.all()
 
     @staticmethod
     @transaction.atomic
@@ -90,56 +61,21 @@ class CivilServantService:
         civil_servant_id: int,
         civil_servant_updates: dict = None,
         job_detail_updates: dict = None,
-        recalculate_salary: bool = False,
     ) -> CivilServant:
-        """
-        Update a civil servant and optionally its job detail and salary.
 
-        If salary recalculation is needed (e.g., due to grade change), this method
-        will automatically recalculate and update the salary detail.
-
-        Args:
-            civil_servant_id: ID of the civil servant to update
-            civil_servant_updates: Dictionary with CivilServant field updates
-            job_detail_updates: Dictionary with JobDetail field updates
-            recalculate_salary: Whether to recalculate salary after updates
-
-        Returns:
-            Updated CivilServant instance
-
-        Raises:
-            CivilServant.DoesNotExist: If civil servant not found
-            ValueError: If validation fails
-        """
         civil_servant = CivilServant.objects.get(id=civil_servant_id)
+        job_detail = civil_servant.JobDetail
 
-        # Update civil servant fields
         if civil_servant_updates:
             for key, value in civil_servant_updates.items():
                 setattr(civil_servant, key, value)
             civil_servant.save()
 
-        # Update job detail if provided
         if job_detail_updates:
-            try:
-                job_detail = civil_servant.JobDetail
-                JobDetailService.update_job_detail(job_detail, **job_detail_updates)
-                recalculate_salary = True  # Grade/echelon changes require salary recalc
-            except JobDetail.DoesNotExist:
-                # Create job detail if it doesn't exist
-                JobDetailService.create_job_detail(
-                    civil_servant=civil_servant, **job_detail_updates
-                )
-                recalculate_salary = True
+            JobDetailService.update_job_detail(job_detail, **job_detail_updates)
 
-        # Recalculate salary if needed
-        if recalculate_salary:
-            try:
-                job_detail = civil_servant.JobDetail
-                salary_service = SalaryService(civil_servant, job_detail)
-                salary_service.save_to_model()
-            except JobDetail.DoesNotExist:
-                pass  # No job detail, skip salary calculation
+        salary_service = SalaryService(civil_servant)
+        salary_service.save_to_model()
 
         return (
             CivilServant.objects.select_related("JobDetail")
