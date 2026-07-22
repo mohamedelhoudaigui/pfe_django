@@ -70,7 +70,7 @@ class JobDetailService:
         return get_object_or_404(JobDetail, civil_servant__id=id)
 
     @staticmethod
-    def get_job_detail_with_cin(cin: str) -> JobDetail:
+    def get_job_detail_with_CIN(cin: str) -> JobDetail:
         return get_object_or_404(JobDetail, civil_servant__CIN=cin)
 
     @staticmethod
@@ -98,55 +98,28 @@ class JobDetailService:
         return grade_table[echelon]
 
     @staticmethod
-    def create_job_detail(civil_servant, job_detail_data: dict) -> JobDetail:
+    def save_job_detail(civil_servant, job_detail_data: dict) -> JobDetail:
         """
-        Create a JobDetail with calculated indice.
+        Create or update a JobDetail, recalculating indice if grade/echelon change.
 
         Args:
             civil_servant: CivilServant instance
-            job_detail_data: Dict with keys zone, categorie, grade,
+            job_detail_data: Dict with any subset of zone, categorie, grade,
                 echelle, echelon, mutuelle
 
         Returns:
-            Created JobDetail instance
+            Created or updated JobDetail instance
 
         Raises:
             ValueError: If validation fails
         """
-        indice = JobDetailService.calculate_indice(
-            job_detail_data["grade"], job_detail_data["echelon"]
-        )
+        job_detail, created = JobDetail.objects.get_or_create(civil_servant=civil_servant)
 
-        job_detail = JobDetail(
-            civil_servant=civil_servant,
-            indice=indice,
-            **job_detail_data,
-        )
-        job_detail.save()
-
-        return job_detail
-
-    @staticmethod
-    def update_job_detail(job_detail: JobDetail, job_detail_updates: dict) -> JobDetail:
-        """
-        Update a JobDetail and recalculate indice if grade/echelon change.
-
-        Args:
-            job_detail: JobDetail instance to update
-            job_detail_updates: Dict with any subset of zone, categorie,
-                grade, echelle, echelon, mutuelle
-
-        Returns:
-            Updated JobDetail instance
-
-        Raises:
-            ValueError: If validation fails
-        """
-        for key, value in job_detail_updates.items():
+        for key, value in job_detail_data.items():
             setattr(job_detail, key, value)
 
-        # If grade or echelon changed, recalculate indice
-        if "grade" in job_detail_updates or "echelon" in job_detail_updates:
+        # Recalculate indice on creation, or if grade/echelon changed
+        if created or "grade" in job_detail_data or "echelon" in job_detail_data:
             job_detail.indice = JobDetailService.calculate_indice(
                 job_detail.grade, job_detail.echelon
             )

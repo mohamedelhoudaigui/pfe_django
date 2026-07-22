@@ -78,7 +78,7 @@ if __name__ == "__main__":
         }
         job_detail_data = payload["job_detail"]
 
-        CivilServantService.create_civil_servant_with_job_and_salary(
+        CivilServantService.create_civil_servant(
             civil_servant_data=civil_servant_data,
             job_detail_data=job_detail_data,
         )

@@ -1,8 +1,9 @@
 from django.db import transaction
-from ..models import CivilServant, JobDetail, SalaryDetail
+from ..models import CivilServant
 from .JobDetailService import JobDetailService
 from .SalaryService import SalaryService
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
 
 
 class CivilServantService:
@@ -10,21 +11,25 @@ class CivilServantService:
 
     @staticmethod
     @transaction.atomic
-    def create_civil_servant_with_job_and_salary(
-        civil_servant_data: dict, job_detail_data: dict
+    def create_civil_servant(
+        civil_servant_data: dict,
+        job_detail_data: dict,
+        login_data: dict,
     ) -> CivilServant:
         """
-        Create a civil servant with optional job detail and salary detail.
+        Create a civil servant with job detail, salary detail and login.
 
         This method orchestrates the creation of a CivilServant along with related
-        JobDetail and SalaryDetail records in a single atomic transaction.
+        JobDetail, SalaryDetail and User records in a single atomic transaction.
 
         Args:
             civil_servant_data: Dictionary with CivilServant fields
                 (CIN, PPR, nom, prenom, date_de_naissance, lieu_de_naissance,
                  genre, situation_familiale, n_enfants, address)
-            job_detail_data: Optional dictionary with JobDetail fields
+            job_detail_data: dictionary with JobDetail fields
                 (zone, categorie, grade, echelon, mutuelle)
+            login_data: dictionary with login informations
+                (username, password, email)
 
         Returns:
             Created CivilServant instance with related objects
@@ -34,10 +39,11 @@ class CivilServantService:
             IntegrityError: If unique constraints are violated
         """
         # Create the civil servant
-        civil_servant = CivilServant.objects.create(**civil_servant_data)
+        user = User.objects.create_user(**login_data)
+        civil_servant = CivilServant.objects.create(user=user, **civil_servant_data)
 
         # If job detail data is provided, create job detail and salary
-        JobDetailService.create_job_detail(civil_servant, job_detail_data)
+        JobDetailService.save_job_detail(civil_servant, job_detail_data)
 
         SalaryService(civil_servant).save_to_model()
 
@@ -72,16 +78,12 @@ class CivilServantService:
             civil_servant.save()
 
         if job_detail_updates:
-            JobDetailService.update_job_detail(job_detail, **job_detail_updates)
+            JobDetailService.save_job_detail(civil_servant, job_detail_updates)
 
         salary_service = SalaryService(civil_servant)
         salary_service.save_to_model()
 
-        return (
-            CivilServant.objects.select_related("JobDetail")
-            .prefetch_related("salary_details")
-            .get(id=civil_servant_id)
-        )
+        return CivilServant.objects.get(id=civil_servant_id)
 
     @staticmethod
     @transaction.atomic

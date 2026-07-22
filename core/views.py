@@ -5,6 +5,7 @@ from .serializers import (
     CivilServantSerializer,
     JobDetailSerializer,
     SalaryDetailSerializer,
+    CivilServantCreateSerializer,
 )
 from .services.CivilServantService import (
     CivilServantService,
@@ -14,26 +15,25 @@ from .services.CivilServantService import (
 
 
 class CivilServantView(APIView):
-    serializer_class = CivilServantSerializer
-
     def get(self, request):
         queryset = CivilServantService.get_all_civil_servants()
-        return Response(self.serializer_class(queryset, many=True).data)
+        return Response(CivilServantSerializer(queryset, many=True).data)
 
     def post(self, request):
-        serializer = self.serializer_class(data=request.data)
+        serializer = CivilServantCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        civil_servant_data = dict(serializer.validated_data)
-        job_detail_data = civil_servant_data.pop("job_detail", None)
+        validated = serializer.validated_data
 
-        queryset = CivilServantService.create_civil_servant_with_job_and_salary(
-            civil_servant_data=civil_servant_data,
-            job_detail_data=job_detail_data,
+        civil_servant = CivilServantService.create_civil_servant(
+            civil_servant_data=validated["civil_servant"],
+            job_detail_data=validated["job_detail"],
+            login_data=validated["login_data"],
         )
 
         return Response(
-            self.serializer_class(queryset).data, status=status.HTTP_201_CREATED
+            CivilServantSerializer(civil_servant).data,
+            status=status.HTTP_201_CREATED,
         )
 
 
@@ -46,8 +46,7 @@ class CivilServantPKView(APIView):
             queryset = CivilServantService.get_civil_servant_with_id(id)
         elif CIN is not None:
             queryset = CivilServantService.get_civil_servant_with_CIN(CIN)
-        if not queryset:
-            return Response()
+
         return Response(self.serializer_class(queryset).data)
 
     def patch(self, request, id):

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.serializers.json import DjangoJSONEncoder
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -17,6 +18,10 @@ class CivilServant(models.Model):
         ("divorced", "married"),
     ]
 
+    # this field gives the ablitiy of authorization to the civil servant model
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="civil_servant"
+    )
     CIN = models.CharField(max_length=20, unique=True)
     PPR = models.CharField(max_length=50, unique=True)
     nom = models.CharField(max_length=100)

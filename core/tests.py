@@ -12,7 +12,7 @@ class SalaryDetailServiceTest(TestCase):
         return Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     def test_salary_service_calculation_steps_for_zone_c_3g_echelon_9(self):
-        civil_servant = CivilServantService.create_civil_servant_with_job_and_salary(
+        civil_servant = CivilServantService.create_civil_servant(
             {
                 "CIN": "AA123457",
                 "PPR": "PPR002",

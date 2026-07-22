@@ -3,6 +3,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from ..models import CivilServant, SalaryDetail
 from .JobDetailService import JobDetailService
 from .GradeIndemnitiesService import GradeIndemnitiesService
+from django.shortcuts import get_object_or_404
 
 
 class SalaryService:
@@ -135,35 +136,33 @@ class SalaryService:
 
         net_salary = self._q(TEM - CMR - AMO - SM - CCD - FOS - IR)
 
-        salary_detail = SalaryDetail.objects.create(
+        salary_detail, _ = SalaryDetail.objects.update_or_create(
             civil_servant=self.civil_servant,
-            base_salary=TB,
-            indemnities=indemnities,
-            tsp=TSP,
-            family_allowance=AF,
-            annual_gross_salary=TEA,
-            monthly_gross_salary=TEM,
-            cmr=CMR,
-            amo=AMO,
-            sm=SM,
-            ccd=CCD,
-            fos=FOS,
-            income_reduction=self.get_income_reduction(TSP),
-            taxable_income=self.get_taxable_income(TSP, monthly_deductions),
-            income_tax=IR,
-            net_salary=net_salary,
+            defaults={
+                "base_salary": TB,
+                "indemnities": indemnities,
+                "tsp": TSP,
+                "family_allowance": AF,
+                "annual_gross_salary": TEA,
+                "monthly_gross_salary": TEM,
+                "cmr": CMR,
+                "amo": AMO,
+                "sm": SM,
+                "ccd": CCD,
+                "fos": FOS,
+                "income_reduction": self.get_income_reduction(TSP),
+                "taxable_income": self.get_taxable_income(TSP, monthly_deductions),
+                "income_tax": IR,
+                "net_salary": net_salary,
+            },
         )
 
         return salary_detail
 
     @staticmethod
-    def get_job_detail_with_id(id: int) -> SalaryDetail:
-        civil_servant = CivilServant.objects.get(id=id)
-        job_detail = SalaryDetail.objects.get(civil_servant=civil_servant)
-        return job_detail
+    def get_salary_with_id(id: int) -> SalaryDetail:
+        return get_object_or_404(SalaryDetail, civil_servant__id=id)
 
     @staticmethod
-    def get_job_detail_with_CIN(CIN: str) -> SalaryDetail:
-        civil_servant = CivilServant.objects.get(CIN=CIN)
-        job_detail = SalaryDetail.objects.get(civil_servant=civil_servant)
-        return job_detail
+    def get_salary_with_CIN(CIN: str) -> SalaryDetail:
+        return get_object_or_404(SalaryDetail, civil_servant__CIN=CIN)
