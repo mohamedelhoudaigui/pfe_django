@@ -53,7 +53,6 @@ class CivilServantSerializer(serializers.ModelSerializer):
             "situation_familiale",
             "n_enfants",
             "address",
-            "job_detail",
         ]
 
 

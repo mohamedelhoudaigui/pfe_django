@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from ..models import CivilServant
 from .JobDetailService import JobDetailService
 from .SalaryService import SalaryService
@@ -38,14 +38,20 @@ class CivilServantService:
             ValueError: If validation fails
             IntegrityError: If unique constraints are violated
         """
+        # check duplicated email
+        email = login_data.get("email")
+
+        if email and User.objects.filter(email__iexact=email).exists():
+            raise IntegrityError(f"A user with email '{email}' already exists.")
+
         # Create the civil servant
         user = User.objects.create_user(**login_data)
         civil_servant = CivilServant.objects.create(user=user, **civil_servant_data)
 
         # If job detail data is provided, create job detail and salary
-        JobDetailService.save_job_detail(civil_servant, job_detail_data)
+        job_detail = JobDetailService.save_job_detail(civil_servant, job_detail_data)
 
-        SalaryService(civil_servant).save_to_model()
+        SalaryService.save_to_model(civil_servant, job_detail)
 
         return civil_servant
 

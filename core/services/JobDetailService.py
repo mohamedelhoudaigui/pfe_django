@@ -101,24 +101,16 @@ class JobDetailService:
     def save_job_detail(civil_servant, job_detail_data: dict) -> JobDetail:
         """
         Create or update a JobDetail, recalculating indice if grade/echelon change.
-
-        Args:
-            civil_servant: CivilServant instance
-            job_detail_data: Dict with any subset of zone, categorie, grade,
-                echelle, echelon, mutuelle
-
-        Returns:
-            Created or updated JobDetail instance
-
-        Raises:
-            ValueError: If validation fails
         """
-        job_detail, created = JobDetail.objects.get_or_create(civil_servant=civil_servant)
+        job_detail = JobDetail.objects.filter(civil_servant=civil_servant).first()
+        created = job_detail is None
+
+        if created:
+            job_detail = JobDetail(civil_servant=civil_servant)
 
         for key, value in job_detail_data.items():
             setattr(job_detail, key, value)
 
-        # Recalculate indice on creation, or if grade/echelon changed
         if created or "grade" in job_detail_data or "echelon" in job_detail_data:
             job_detail.indice = JobDetailService.calculate_indice(
                 job_detail.grade, job_detail.echelon

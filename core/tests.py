@@ -13,9 +13,9 @@ class SalaryDetailServiceTest(TestCase):
 
     def test_salary_service_calculation_steps_for_zone_c_3g_echelon_9(self):
         civil_servant = CivilServantService.create_civil_servant(
-            {
-                "CIN": "AA123457",
-                "PPR": "PPR002",
+            civil_servant_data={
+                "CIN": "AA1257",
+                "PPR": "PPR02",
                 "nom": "Jack",
                 "prenom": "Test",
                 "date_de_naissance": "1985-05-05",
@@ -25,7 +25,7 @@ class SalaryDetailServiceTest(TestCase):
                 "n_enfants": 1,
                 "address": "Rue Exemple 1",
             },
-            {
+            job_detail_data={
                 "zone": "C",
                 "categorie": "technicien",
                 "grade": "3G",
@@ -33,21 +33,30 @@ class SalaryDetailServiceTest(TestCase):
                 "echelon": 9,
                 "mutuelle": "CNOPS",
             },
+            login_data={
+                "username": "test1",
+                "password": "test1test2",
+                "email": "test@test.com",
+            },
         )
 
-        job_detail = JobDetailService.get_jobdetail(civil_servant)
-        service = SalaryService(civil_servant)
+        job_detail = JobDetailService.get_jobdetail(civil_servant=civil_servant)
+        # service = SalaryService(civil_servant)
 
-        base_salary = service.get_base_salary()
-        indemnities = service.get_indemnities(base_salary)
-        tsp = service.get_TSP(base_salary, indemnities)
-        family_allowance = service.get_AF(civil_servant.n_enfants)
+        base_salary = SalaryService.get_base_salary(job_detail)
+        indemnities = SalaryService.get_indemnities(
+            civil_servant, job_detail, base_salary
+        )
+        tsp = SalaryService.get_TSP(base_salary, indemnities)
+        family_allowance = SalaryService.get_AF(civil_servant.n_enfants)
         annual_gross_salary = self._q(tsp + family_allowance)  # TEA
         monthly_gross_salary = self._q(annual_gross_salary / Decimal("12"))  # TEM
-        cmr, amo, sm, ccd, fos = service.get_monthly_deductions(tsp, job_detail.echelle)
-        income_reduction = service.get_income_reduction(tsp)
-        taxable_income = service.get_taxable_income(tsp, (cmr, amo, sm, ccd, fos))
-        income_tax = service.get_income_tax(
+        cmr, amo, sm, ccd, fos = SalaryService.get_monthly_deductions(
+            tsp, job_detail.echelle
+        )
+        income_reduction = SalaryService.get_income_reduction(tsp)
+        taxable_income = SalaryService.get_taxable_income(tsp, (cmr, amo, sm, ccd, fos))
+        income_tax = SalaryService.get_income_tax(
             tsp, (cmr, amo, sm, ccd, fos), civil_servant.n_enfants, Decimal(1)
         )
         net_salary = (

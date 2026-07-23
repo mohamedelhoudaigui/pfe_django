@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import (
     CivilServantSerializer,
     JobDetailSerializer,
@@ -15,6 +16,12 @@ from .services.CivilServantService import (
 
 
 class CivilServantView(APIView):
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [AllowAny()]
+        else:
+            return [IsAuthenticated()]
+
     def get(self, request):
         queryset = CivilServantService.get_all_civil_servants()
         return Response(CivilServantSerializer(queryset, many=True).data)
@@ -38,7 +45,6 @@ class CivilServantView(APIView):
 
 
 class CivilServantPKView(APIView):
-    serializer_class = CivilServantSerializer
 
     def get(self, request, id=None, CIN=None):
         queryset = None
@@ -47,10 +53,10 @@ class CivilServantPKView(APIView):
         elif CIN is not None:
             queryset = CivilServantService.get_civil_servant_with_CIN(CIN)
 
-        return Response(self.serializer_class(queryset).data)
+        return Response(CivilServantSerializer(queryset).data)
 
     def patch(self, request, id):
-        serializer = self.serializer_class(data=request.data, partial=True)
+        serializer = CivilServantSerializer(data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
 
         civil_servant_updates = dict(serializer.validated_data)
@@ -62,11 +68,10 @@ class CivilServantPKView(APIView):
             job_detail_updates=job_detail_updates,
         )
 
-        return Response(self.serializer_class(updated_civil_servant).data)
+        return Response(CivilServantSerializer(updated_civil_servant).data)
 
 
 class JobDetailPKView(APIView):
-    serializer_class = JobDetailSerializer
 
     def get(self, request, id=None, CIN=None):
         queryset = None
@@ -75,11 +80,10 @@ class JobDetailPKView(APIView):
         elif CIN is not None:
             queryset = JobDetailService.get_job_detail_with_CIN(CIN)
 
-        return Response(self.serializer_class(queryset).data)
+        return Response(JobDetailSerializer(queryset).data)
 
 
 class SalaryDetailPKView(APIView):
-    serializer_class = SalaryDetailSerializer
 
     def get(self, request, id=None, CIN=None):
         queryset = None
@@ -88,4 +92,4 @@ class SalaryDetailPKView(APIView):
         elif CIN is not None:
             queryset = SalaryService.get_salary_with_CIN(CIN)
 
-        return Response(self.serializer_class(queryset).data)
+        return Response(SalaryDetailSerializer(queryset).data)
