@@ -86,8 +86,7 @@ class CivilServantService:
         if job_detail_updates:
             JobDetailService.save_job_detail(civil_servant, job_detail_updates)
 
-        salary_service = SalaryService(civil_servant)
-        salary_service.save_to_model()
+        SalaryService.save_to_model(civil_servant, job_detail)
 
         return CivilServant.objects.get(id=civil_servant_id)
 

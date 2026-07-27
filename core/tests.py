@@ -45,7 +45,7 @@ class SalaryDetailServiceTest(TestCase):
 
         base_salary = SalaryService.get_base_salary(job_detail)
         indemnities = SalaryService.get_indemnities(
-            civil_servant, job_detail, base_salary
+            job_detail, base_salary
         )
         tsp = SalaryService.get_TSP(base_salary, indemnities)
         family_allowance = SalaryService.get_AF(civil_servant.n_enfants)

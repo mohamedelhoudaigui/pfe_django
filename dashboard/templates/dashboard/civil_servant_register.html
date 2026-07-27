@@ -1,0 +1,58 @@
+<!-- dashboard/templates/dashboard/civil_servant_register.html -->
+{% extends "base.html" %}
+{% block content %}
+<h1>Register Civil Servant</h1>
+
+{% if form.non_field_errors %}
+    <div class="error-box">
+        {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<form method="post" novalidate>
+    {% csrf_token %}
+
+    <fieldset>
+        <legend>Personal Information</legend>
+        {% for field in form %}
+            {% if field.name in "CIN,PPR,nom,prenom,date_de_naissance,lieu_de_naissance,genre,situation_familiale,n_enfants,address" %}
+                <div class="form-row">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>Job Detail</legend>
+        {% for field in form %}
+            {% if field.name in "zone,categorie,grade,echelle,echelon,mutuelle" %}
+                <div class="form-row">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+
+    <fieldset>
+        <legend>Login Credentials</legend>
+        {% for field in form %}
+            {% if field.name in "username,email,password,confirm_password" %}
+                <div class="form-row">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+        {% endfor %}
+    </fieldset>
+
+    <button type="submit">Register Civil Servant</button>
+</form>
+{% endblock %}

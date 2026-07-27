@@ -1,0 +1,15 @@
+<!-- dashboard/templates/dashboard/_search_results.html -->
+<table>
+    {% for cs in civil_servants %}
+    <tr>
+        <td>{{ cs.CIN }}</td>
+        <td>{{ cs.nom }} {{ cs.prenom }}</td>
+        <td>
+            <button hx-get="{% url 'dashboard:civil_servant_detail' cs.pk %}" hx-target="#detail-panel">
+                View
+            </button>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<div id="detail-panel"></div>

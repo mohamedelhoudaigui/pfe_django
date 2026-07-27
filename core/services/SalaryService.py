@@ -36,10 +36,10 @@ class SalaryService:
 
     @staticmethod
     def get_indemnities(
-        civil_servant: CivilServant, job_detail: JobDetail, TB
+        job_detail: JobDetail, TB
     ) -> Dict[str, Decimal]:
         zone_indemnity = SalaryService._q(TB * SalaryService.ZONE_RATE[job_detail.zone])
-        indemnities = GradeIndemnitiesService(civil_servant).get_indemnities()
+        indemnities = GradeIndemnitiesService.get_indemnities(job_detail)
         indemnities["zone"] = zone_indemnity
         return indemnities
 
@@ -152,7 +152,7 @@ class SalaryService:
         )
 
         TB = SalaryService.get_base_salary(job_detail)
-        indemnities = SalaryService.get_indemnities(civil_servant, job_detail, TB)
+        indemnities = SalaryService.get_indemnities(job_detail, TB)
         TSP = SalaryService.get_TSP(TB, indemnities)
         AF = SalaryService.get_AF(n_enfants)
 

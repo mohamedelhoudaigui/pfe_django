@@ -1,5 +1,5 @@
 from decimal import Decimal, ROUND_HALF_UP
-from ..models import CivilServant
+from ..models import CivilServant, JobDetail
 from .JobDetailService import JobDetailService
 from typing import Dict
 
@@ -17,27 +17,24 @@ from typing import Dict
 # administratif_progression
 
 
-
-
 class GradeIndemnitiesService:
-    def __init__(self, civil_servant: CivilServant):
-        self.civil_servant = civil_servant
-        self.job_detail = JobDetailService.get_jobdetail(self.civil_servant)
 
     @staticmethod
     def _q(value) -> Decimal:
         """Round a value to 2 decimal places (money precision)."""
         return Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
-    def get_indemnities(self) -> Dict[str, Decimal]:
-        categorie = self.job_detail.categorie
-        grade = self.job_detail.grade
-        step = self.job_detail.echelon
+    @staticmethod
+    def get_indemnities(self, job_detail: JobDetail) -> Dict[str, Decimal]:
+        categorie = job_detail.categorie
+        grade = job_detail.grade
+        step = job_detail.echelon
 
         # we multiply the indemnities X 12 to get yearly value of them
 
         indemnities = {}
         if categorie == "technicien":
+
             if grade == "4G":
                 indemnities["technicality"] = 4420
                 indemnities["burdens"] = 305
@@ -64,7 +61,31 @@ class GradeIndemnitiesService:
                 elif step <= 13:
                     indemnities["technicality"] = 8594
                     indemnities["mentoring"] = 3600
+
                 indemnities["burdens"] = 1000
+
+        elif categorie == "administrateur":
+
+            if grade == "3G":
+                if step <= 5:
+                    indemnities["special_administrative"] = 4605
+                else:
+                    indemnities["special_administrative"] = 4742
+                    indemnities["burdens"] = 883
+
+            elif grade == "2G":
+                if step <= 5:
+                    indemnities["special_administrative"] = 6399
+                    indemnities["burdens"] = 1565
+                else:
+                    indemnities["special_administrative"] = 7168
+                    indemnities["burdens"] = 4650
+
+            elif grade == "1G":
+                indemnities["special_administrative"] = 8003
+                indemnities["burdens"] = 7850
+
+            indemnities["burdens"] = 1450
 
         for key in indemnities:
             indemnities[key] = self._q(indemnities[key] * 12)

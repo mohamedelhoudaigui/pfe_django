@@ -37,4 +37,5 @@ urlpatterns = [
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("explorer/", include("explorer.urls")),
     path("api/", include("core.urls")),
+    path("dashboard/", include("dashboard.urls")),  # new HTMX UI
 ]

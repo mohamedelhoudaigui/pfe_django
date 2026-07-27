@@ -1,0 +1,17 @@
+<!-- dashboard/templates/dashboard/civil_servant_list.html -->
+{% extends "base.html" %}
+{% block content %}
+<h1>Civil Servants</h1>
+{% if user.is_superuser %}
+    <a href="{% url 'dashboard:civil_servant_register' %}">+ Register New Civil Servant</a>
+</br>
+{% endif %}
+<input type="text" name="q" placeholder="Search by name..."
+       hx-get="{% url 'dashboard:civil_servant_search' %}"
+       hx-trigger="keyup changed delay:300ms"
+       hx-target="#results">
+
+<div id="results">
+    {% include "dashboard/_search_results.html" with civil_servants=civil_servants %}
+</div>
+{% endblock %}
