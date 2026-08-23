@@ -1,7 +1,17 @@
-[tool.taskipy.tasks]
-run = "python manage.py runserver"
-migrate = "python manage.py makemigrations && python manage.py migrate"
-flush = "python manage.py flush"
-seed = "python seed.py"
-check = "python manage.py check"
-test = "python manage.py test core"
+[project]
+name = "pfe-django"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "mohamed el houdaigui", email = "mohamedelhoudaigui27@gmail.com" }
+]
+requires-python = ">=3.13"
+dependencies = []
+
+[project.scripts]
+pfe-django = "pfe_django:main"
+
+[build-system]
+requires = ["uv_build>=0.12.5,<0.13.0"]
+build-backend = "uv_build"
