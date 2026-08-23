@@ -22,7 +22,7 @@ ingenieur:
 11 ing etat 
 hors echelle ing en chef
 
-arch:
+architect:
 
 11 arch 
 hors echelle arch en chef
@@ -53,7 +53,7 @@ technicien de stante:
 pricipale
 except
 
-redacteur / tech
+redacteur / technicien
 
 8 4G
 9 3G

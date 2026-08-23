@@ -25,7 +25,7 @@ class GradeIndemnitiesService:
         return Decimal(value).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
     @staticmethod
-    def get_indemnities(self, job_detail: JobDetail) -> Dict[str, Decimal]:
+    def get_indemnities(job_detail: JobDetail) -> Dict[str, Decimal]:
         categorie = job_detail.categorie
         grade = job_detail.grade
         step = job_detail.echelon
@@ -88,6 +88,6 @@ class GradeIndemnitiesService:
             indemnities["burdens"] = 1450
 
         for key in indemnities:
-            indemnities[key] = self._q(indemnities[key] * 12)
+            indemnities[key] = GradeIndemnitiesService._q(indemnities[key] * 12)
 
         return indemnities

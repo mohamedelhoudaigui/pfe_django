@@ -54,8 +54,8 @@ class JobDetail(models.Model):
     zone = models.CharField(max_length=1, choices=ZONES)
     categorie = models.CharField(max_length=100)
     grade = models.CharField(max_length=10)
-    echelle = models.PositiveIntegerField()
-    echelon = models.CharField(max_length=10)
+    echelle = models.PositiveSmallIntegerField()
+    echelon = models.PositiveSmallIntegerField()
     indice = models.PositiveSmallIntegerField()
     mutuelle = models.CharField(max_length=50, choices=MUTUELLE)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -120,7 +120,7 @@ class Grade(models.Model):
 class EchelonIndice(models.Model):
     grade = models.ForeignKey(Grade, related_name="echelons", on_delete=models.CASCADE)
     echelon = models.PositiveSmallIntegerField()
-    indice = models.PositiveIntegerField()
+    indice = models.PositiveSmallIntegerField()
 
     class Meta:
         unique_together = ("grade", "echelon")

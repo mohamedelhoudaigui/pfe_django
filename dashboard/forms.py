@@ -22,10 +22,10 @@ class CivilServantRegistrationForm(forms.Form):
 
     # --- JobDetail fields ---
     zone = forms.ChoiceField(choices=JobDetail.ZONES, label="Zone")
-    categorie = forms.ChoiceField(choices=JobDetail.CATEGORIES, label="Catégorie")
-    grade = forms.ChoiceField(choices=JobDetail.GRADES, label="Grade")
-    echelle = forms.ChoiceField(choices=JobDetail.ECHELLE, label="Échelle")
-    echelon = forms.ChoiceField(choices=JobDetail.ECHELON, label="Échelon")
+    categorie = forms.ChoiceField(label="Catégorie") # add job deatil categories here
+    grade = forms.ChoiceField(label="Grade") # same here
+    echelle = forms.ChoiceField(label="Échelle")
+    echelon = forms.ChoiceField(label="Échelon")
     mutuelle = forms.ChoiceField(choices=JobDetail.MUTUELLE, label="Mutuelle")
 
     # --- Login fields ---

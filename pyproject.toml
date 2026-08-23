@@ -7,7 +7,16 @@ authors = [
     { name = "mohamed el houdaigui", email = "mohamedelhoudaigui27@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "dj-rest-auth>=7.2.0",
+    "django>=6.1",
+    "django-htmx>=1.29.0",
+    "django-sql-explorer>=5.3",
+    "djangorestframework>=3.18.0",
+    "djangorestframework-simplejwt>=5.5.1",
+    "drf-spectacular>=0.30.0",
+    "faker>=40.37.0",
+]
 
 [project.scripts]
 pfe-django = "pfe_django:main"
