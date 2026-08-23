@@ -54,8 +54,11 @@ class JobDetail(models.Model):
     zone = models.CharField(max_length=1, choices=ZONES)
     categorie = models.CharField(max_length=100)
     grade = models.CharField(max_length=10)
-    echelle = models.PositiveSmallIntegerField()
+    # echelle is associated with grade like for example : tech 4th grade is echelle 9
+    echelle = models.CharField(max_length=10)
+    # this is the one that goes from 1 to 11 and has "exeptionelle"
     echelon = models.PositiveSmallIntegerField()
+    # indice is just echelon representation in salary calculation
     indice = models.PositiveSmallIntegerField()
     mutuelle = models.CharField(max_length=50, choices=MUTUELLE)
     created_at = models.DateTimeField(auto_now_add=True)

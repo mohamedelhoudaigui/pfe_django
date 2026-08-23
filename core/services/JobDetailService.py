@@ -63,9 +63,9 @@ class JobDetailService:
         for key, value in job_detail_data.items():
             setattr(job_detail, key, value)
 
-        if created or "grade" in job_detail_data or "echelon" in job_detail_data:
+        if created or "categorie" in job_detail_data or "grade" in job_detail_data or "echelon" in job_detail_data:
             job_detail.indice = JobDetailService.calculate_indice(
-                job_detail.grade, job_detail.echelon
+                job_detail.categorie, job_detail.grade, job_detail.echelon
             )
 
         job_detail.save()
