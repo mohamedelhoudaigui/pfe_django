@@ -5,8 +5,6 @@ from core.services.CivilServantService import CivilServantService
 from core.models import CivilServant
 from django.contrib import messages
 from django.db import IntegrityError
-
-from core.services.CivilServantService import CivilServantService
 from .forms import CivilServantRegistrationForm
 from .decorators import superuser_required
 

@@ -147,10 +147,6 @@ SIMPLE_JWT = {
     "UPDATE_LAST_LOGIN": True,
 }
 
-# explorer settings
-
-EXPLORER_CONNECTIONS = {"Default": "default"}
-EXPLORER_DEFAULT_CONNECTION = "default"
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Larache Commune API",
