@@ -78,13 +78,14 @@ class SalaryService:
             Decimal("100"), SalaryService._q(TSP * Decimal("0.01") / Decimal("12"))
         )
         FOS = 0
-        if echelle <= 6:
+        # hydrogen bomb here (handle later):
+        if int(echelle) <= 6:
             FOS = SalaryService._q("25")
-        if echelle <= 10:
+        if int(echelle) <= 10:
             FOS = SalaryService._q("50")
-        if echelle <= 11:
+        if int(echelle) <= 11:
             FOS = SalaryService._q("80")
-        elif echelle > 11:
+        elif int(echelle) > 11:
             FOS = SalaryService._q("120")
         return (CMR, AMO, SM, CCD, FOS)
 

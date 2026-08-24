@@ -1,0 +1,4 @@
+<option value="">---------</option>
+{% for e in echelons %}
+    <option value="{{ e.echelon }}">Échelon {{ e.echelon }} — indice {{ e.indice }}</option>
+{% endfor %}

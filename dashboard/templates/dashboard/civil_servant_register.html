@@ -29,15 +29,59 @@
 
     <fieldset>
         <legend>Job Detail</legend>
-        {% for field in form %}
-            {% if field.name in "zone,categorie,grade,echelle,echelon,mutuelle" %}
-                <div class="form-row">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-                </div>
-            {% endif %}
-        {% endfor %}
+
+        <div class="form-row">
+            {{ form.zone.label_tag }}
+            {{ form.zone }}
+        </div>
+
+        <div class="form-row">
+            {{ form.categorie.label_tag }}
+            <select name="categorie" id="id_categorie"
+                    hx-get="{% url 'dashboard:load_grades' %}"
+                    hx-target="#id_grade"
+                    hx-trigger="change"
+                    hx-include="[name='categorie']">
+                {% for value, label in form.categorie.field.choices %}
+                    <option value="{{ value }}" {% if form.categorie.value == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% for error in form.categorie.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row">
+            {{ form.grade.label_tag }}
+            <select name="grade" id="id_grade"
+                    hx-get="{% url 'dashboard:load_echelons' %}"
+                    hx-target="#id_echelon"
+                    hx-trigger="change"
+                    hx-include="[name='categorie'],[name='grade']">
+                {% for value, label in form.grade.field.choices %}
+                    <option value="{{ value }}" {% if form.grade.value == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% for error in form.grade.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row">
+            {{ form.echelon.label_tag }}
+            <select name="echelon" id="id_echelon">
+                {% for value, label in form.echelon.field.choices %}
+                    <option value="{{ value }}" {% if form.echelon.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            {% for error in form.echelon.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+        </div>
+
+        <div class="form-row">
+            {{ form.echelle.label_tag }}
+            {{ form.echelle }}
+        </div>
+
+        <div class="form-row">
+            {{ form.mutuelle.label_tag }}
+            {{ form.mutuelle }}
+        </div>
     </fieldset>
 
     <fieldset>

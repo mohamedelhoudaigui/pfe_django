@@ -1,5 +1,5 @@
 from django import forms
-from core.models import CivilServant, JobDetail
+from core.models import CivilServant, JobDetail, Categorie
 from django.contrib.auth.models import User
 
 
@@ -22,21 +22,49 @@ class CivilServantRegistrationForm(forms.Form):
 
     # --- JobDetail fields ---
     zone = forms.ChoiceField(choices=JobDetail.ZONES, label="Zone")
-    categorie = forms.ChoiceField(label="Catégorie") # add job deatil categories here
-    grade = forms.ChoiceField(label="Grade") # same here
-    echelle = forms.ChoiceField(label="Échelle")
-    echelon = forms.ChoiceField(label="Échelon")
+
+    categorie = forms.ChoiceField(label="Catégorie")
+    grade = forms.ChoiceField(label="Grade", choices=[("", "---------")])
+    echelon = forms.ChoiceField(label="Échelon", choices=[("", "---------")])
+    echelle = forms.CharField(max_length=10, label="Échelle", required=False)
+
     mutuelle = forms.ChoiceField(choices=JobDetail.MUTUELLE, label="Mutuelle")
 
     # --- Login fields ---
     username = forms.CharField(max_length=150, label="Nom d'utilisateur")
     email = forms.EmailField(label="Email")
-    password = forms.CharField(
-        widget=forms.PasswordInput, min_length=8, label="Mot de passe"
-    )
-    confirm_password = forms.CharField(
-        widget=forms.PasswordInput, label="Confirmer le mot de passe"
-    )
+    password = forms.CharField(widget=forms.PasswordInput, min_length=8, label="Mot de passe")
+    confirm_password = forms.CharField(widget=forms.PasswordInput, label="Confirmer le mot de passe")
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # categorie choices always come straight from the DB
+        self.fields["categorie"].choices = [("", "---------")] + [
+            (c.code, c.label or c.code) for c in Categorie.objects.order_by("code")
+        ]
+
+        # if grade/echelon were posted (re-render after a validation error),
+        # rebuild their choices from the DB too, so re-selecting the same value works
+        data = self.data if self.is_bound else {}
+        categorie_code = data.get("categorie")
+        grade_code = data.get("grade")
+
+        if categorie_code:
+            from core.models import Grade
+            self.fields["grade"].choices = [("", "---------")] + [
+                (g.code, g.label or g.code)
+                for g in Grade.objects.filter(categorie__code=categorie_code).order_by("code")
+            ]
+
+        if categorie_code and grade_code:
+            from core.models import EchelonIndice
+            self.fields["echelon"].choices = [("", "---------")] + [
+                (e.echelon, f"Échelon {e.echelon} — indice {e.indice}")
+                for e in EchelonIndice.objects.filter(
+                    grade__categorie__code=categorie_code, grade__code=grade_code
+                ).order_by("echelon")
+            ]
 
     def clean_CIN(self):
         cin = self.cleaned_data["CIN"]
@@ -71,9 +99,6 @@ class CivilServantRegistrationForm(forms.Form):
         return cleaned_data
 
     def get_service_dicts(self) -> dict:
-        """
-        Split cleaned_data into the three dicts CivilServantService.create_civil_servant expects.
-        """
         data = self.cleaned_data
 
         civil_servant_data = {
@@ -93,7 +118,7 @@ class CivilServantRegistrationForm(forms.Form):
             "zone": data["zone"],
             "categorie": data["categorie"],
             "grade": data["grade"],
-            "echelle": data["echelle"],
+            "echelle": data.get("echelle") or "",
             "echelon": data["echelon"],
             "mutuelle": data["mutuelle"],
         }

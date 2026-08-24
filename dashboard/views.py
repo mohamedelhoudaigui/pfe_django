@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from core.services.CivilServantService import CivilServantService
-from core.models import CivilServant
+from core.models import CivilServant, Grade, EchelonIndice
 from django.contrib import messages
 from django.db import IntegrityError
 from .forms import CivilServantRegistrationForm
@@ -77,3 +77,22 @@ def civil_servant_register(request):
         form = CivilServantRegistrationForm()
 
     return render(request, "dashboard/civil_servant_register.html", {"form": form})
+
+
+@superuser_required
+def load_grades(request):
+    """Returns <option> list of grades for the selected categorie."""
+    categorie_code = request.GET.get("categorie")
+    grades = Grade.objects.filter(categorie__code=categorie_code).order_by("code")
+    return render(request, "dashboard/_grade_options.html", {"grades": grades})
+
+
+@superuser_required
+def load_echelons(request):
+    """Returns <option> list of echelons (with indice) for the selected categorie+grade."""
+    categorie_code = request.GET.get("categorie")
+    grade_code = request.GET.get("grade")
+    echelons = EchelonIndice.objects.filter(
+        grade__categorie__code=categorie_code, grade__code=grade_code
+    ).order_by("echelon")
+    return render(request, "dashboard/_echelon_options.html", {"echelons": echelons})
