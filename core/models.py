@@ -47,6 +47,22 @@ class JobDetail(models.Model):
     ZONES = [("A", "A"), ("B", "B"), ("C", "C")]
     MUTUELLE = [("CNOPS", "CNOPS")]
 
+    POSITION = [
+        ("en_activite", "En activité"),
+        ("abandon_de_poste", "Abandon de poste"),
+        ("conge_de_maladie", "Congé de maladie"),
+        ("decharge_syndicale", "Décharge syndicale"),
+        ("demission", "Démission"),
+        ("detachement", "Détachement"),
+        ("licenciement", "Licenciement"),
+        ("mise_a_disposition", "Mise à disposition"),
+        ("mise_en_disponibilite", "Mise en disponibilité"),
+        ("mutation", "Mutation"),
+        ("position_militaire", "Position militaire"),
+        ("stagiaire", "Stagiaire"),
+        ("suspension_provisoire", "Suspension provisoire"),
+    ]
+
     civil_servant = models.OneToOneField(
         "CivilServant", on_delete=models.CASCADE, related_name="JobDetail"
     )
@@ -58,6 +74,7 @@ class JobDetail(models.Model):
     echelon = models.PositiveSmallIntegerField(help_text="1–11, includes 'exceptionnelle'")
     indice = models.PositiveSmallIntegerField(help_text="Échelon's salary-calc representation")
     mutuelle = models.CharField(max_length=50, choices=MUTUELLE)
+    position = models.CharField(max_length=25, choices=POSITION, default="en_activite")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

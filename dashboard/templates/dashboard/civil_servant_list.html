@@ -1,12 +1,16 @@
 <!-- dashboard/templates/dashboard/civil_servant_list.html -->
 {% extends "base.html" %}
 {% block content %}
-<h1>Civil Servants</h1>
-{% if user.is_superuser %}
-    <a href="{% url 'dashboard:civil_servant_register' %}">+ Register New Civil Servant</a>
-</br>
-{% endif %}
-<input type="text" name="q" placeholder="Search by name..."
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">Civil Servants</h1>
+    {% if user.is_superuser %}
+        <a href="{% url 'dashboard:civil_servant_register' %}" class="btn btn-primary btn-sm">
+            + Register New Civil Servant
+        </a>
+    {% endif %}
+</div>
+
+<input type="text" name="q" class="form-control mb-3" placeholder="Search by name..."
        hx-get="{% url 'dashboard:civil_servant_search' %}"
        hx-trigger="keyup changed delay:300ms"
        hx-target="#results">

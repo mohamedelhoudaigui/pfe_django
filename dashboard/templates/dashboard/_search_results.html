@@ -1,15 +1,25 @@
 <!-- dashboard/templates/dashboard/_search_results.html -->
-<table>
-    {% for cs in civil_servants %}
-    <tr>
-        <td>{{ cs.CIN }}</td>
-        <td>{{ cs.nom }} {{ cs.prenom }}</td>
-        <td>
-            <button hx-get="{% url 'dashboard:civil_servant_detail' cs.pk %}" hx-target="#detail-panel">
-                View
-            </button>
-        </td>
-    </tr>
-    {% endfor %}
+<table class="table table-striped table-hover align-middle bg-white">
+    <thead>
+        <tr>
+            <th>CIN</th>
+            <th>Name</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cs in civil_servants %}
+        <tr>
+            <td>{{ cs.CIN }}</td>
+            <td>{{ cs.nom }} {{ cs.prenom }}</td>
+            <td>
+                <button class="btn btn-outline-primary btn-sm"
+                        hx-get="{% url 'dashboard:civil_servant_detail' cs.pk %}" hx-target="#detail-panel">
+                    View
+                </button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
 </table>
 <div id="detail-panel"></div>

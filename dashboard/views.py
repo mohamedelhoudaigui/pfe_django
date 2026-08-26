@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from core.services.CivilServantService import CivilServantService
+from core.services.CivilServantService import CivilServantService, JobDetailService
 from core.models import CivilServant, Grade, EchelonIndice
 from django.contrib import messages
 from django.db import IntegrityError
@@ -10,6 +10,9 @@ from .decorators import superuser_required
 
 
 def login_view(request):
+    if request.user.is_authenticated:
+        messages.info(request, "You're already logged in.")
+        return redirect("dashboard:civil_servant_list")
     if request.method == "POST":
         username = request.POST.get("username")
         password = request.POST.get("password")
@@ -37,8 +40,12 @@ def civil_servant_list(request):
 @login_required
 def civil_servant_detail(request, pk):
     civil_servant = CivilServantService.get_civil_servant_with_id(id=pk)
+    job_detail = JobDetailService.get_jobdetail(civil_servant)
     return render(
-        request, "dashboard/civil_servant_detail.html", {"civil_servant": civil_servant}
+        request, "dashboard/civil_servant_detail.html", {
+            "civil_servant": civil_servant,
+            "job_detail": job_detail,
+        },
     )
 
 

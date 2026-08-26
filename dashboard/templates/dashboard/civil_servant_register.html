@@ -1,12 +1,12 @@
 <!-- dashboard/templates/dashboard/civil_servant_register.html -->
 {% extends "base.html" %}
 {% block content %}
-<h1>Register Civil Servant</h1>
+<h1 class="h3 mb-4">Register Civil Servant</h1>
 
 {% if form.non_field_errors %}
-    <div class="error-box">
+    <div class="alert alert-danger">
         {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
+            <p class="mb-0">{{ error }}</p>
         {% endfor %}
     </div>
 {% endif %}
@@ -14,89 +14,100 @@
 <form method="post" novalidate>
     {% csrf_token %}
 
-    <fieldset>
-        <legend>Personal Information</legend>
-        {% for field in form %}
-            {% if field.name in "CIN,PPR,nom,prenom,date_de_naissance,lieu_de_naissance,genre,situation_familiale,n_enfants,address" %}
-                <div class="form-row">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+    <fieldset class="card mb-3">
+        <div class="card-body">
+            <legend class="h5">Personal Information</legend>
+            <div class="row g-3">
+                {% for field in form %}
+                    {% if field.name in "CIN,PPR,nom,prenom,date_de_naissance,lieu_de_naissance,genre,situation_familiale,n_enfants,address" %}
+                        <div class="col-md-6">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </fieldset>
+
+    <fieldset class="card mb-3">
+        <div class="card-body">
+            <legend class="h5">Job Detail</legend>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    {{ form.zone.label_tag }}
+                    {{ form.zone }}
                 </div>
-            {% endif %}
-        {% endfor %}
-    </fieldset>
 
-    <fieldset>
-        <legend>Job Detail</legend>
-
-        <div class="form-row">
-            {{ form.zone.label_tag }}
-            {{ form.zone }}
-        </div>
-
-        <div class="form-row">
-            {{ form.categorie.label_tag }}
-            <select name="categorie" id="id_categorie"
-                    hx-get="{% url 'dashboard:load_grades' %}"
-                    hx-target="#id_grade"
-                    hx-trigger="change"
-                    hx-include="[name='categorie']">
-                {% for value, label in form.categorie.field.choices %}
-                    <option value="{{ value }}" {% if form.categorie.value == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-            {% for error in form.categorie.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-row">
-            {{ form.grade.label_tag }}
-            <select name="grade" id="id_grade"
-                    hx-get="{% url 'dashboard:load_echelons' %}"
-                    hx-target="#id_echelon"
-                    hx-trigger="change"
-                    hx-include="[name='categorie'],[name='grade']">
-                {% for value, label in form.grade.field.choices %}
-                    <option value="{{ value }}" {% if form.grade.value == value %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-            {% for error in form.grade.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-row">
-            {{ form.echelon.label_tag }}
-            <select name="echelon" id="id_echelon">
-                {% for value, label in form.echelon.field.choices %}
-                    <option value="{{ value }}" {% if form.echelon.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
-                {% endfor %}
-            </select>
-            {% for error in form.echelon.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
-        </div>
-
-        <div class="form-row">
-            {{ form.echelle.label_tag }}
-            {{ form.echelle }}
-        </div>
-
-        <div class="form-row">
-            {{ form.mutuelle.label_tag }}
-            {{ form.mutuelle }}
-        </div>
-    </fieldset>
-
-    <fieldset>
-        <legend>Login Credentials</legend>
-        {% for field in form %}
-            {% if field.name in "username,email,password,confirm_password" %}
-                <div class="form-row">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% for error in field.errors %}<p class="field-error">{{ error }}</p>{% endfor %}
+                <div class="col-md-6">
+                    {{ form.categorie.label_tag }}
+                    <select name="categorie" id="id_categorie" class="form-select"
+                            hx-get="{% url 'dashboard:load_grades' %}"
+                            hx-target="#id_grade"
+                            hx-trigger="change"
+                            hx-include="[name='categorie']">
+                        {% for value, label in form.categorie.field.choices %}
+                            <option value="{{ value }}" {% if form.categorie.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for error in form.categorie.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
                 </div>
-            {% endif %}
-        {% endfor %}
+
+                <div class="col-md-6">
+                    {{ form.grade.label_tag }}
+                    <select name="grade" id="id_grade" class="form-select"
+                            hx-get="{% url 'dashboard:load_echelons' %}"
+                            hx-target="#id_echelon"
+                            hx-trigger="change"
+                            hx-include="[name='categorie'],[name='grade']">
+                        {% for value, label in form.grade.field.choices %}
+                            <option value="{{ value }}" {% if form.grade.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for error in form.grade.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form.echelon.label_tag }}
+                    <select name="echelon" id="id_echelon" class="form-select">
+                        {% for value, label in form.echelon.field.choices %}
+                            <option value="{{ value }}" {% if form.echelon.value|stringformat:"s" == value|stringformat:"s" %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    {% for error in form.echelon.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form.echelle.label_tag }}
+                    {{ form.echelle }}
+                </div>
+
+                <div class="col-md-6">
+                    {{ form.mutuelle.label_tag }}
+                    {{ form.mutuelle }}
+                </div>
+            </div>
+        </div>
     </fieldset>
 
-    <button type="submit">Register Civil Servant</button>
+    <fieldset class="card mb-3">
+        <div class="card-body">
+            <legend class="h5">Login Credentials</legend>
+            <div class="row g-3">
+                {% for field in form %}
+                    {% if field.name in "username,email,password,confirm_password" %}
+                        <div class="col-md-6">
+                            {{ field.label_tag }}
+                            {{ field }}
+                            {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </fieldset>
+
+    <button type="submit" class="btn btn-primary">Register Civil Servant</button>
 </form>
 {% endblock %}

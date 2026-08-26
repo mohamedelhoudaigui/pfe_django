@@ -3,9 +3,19 @@ from django.test import TestCase
 from core.services.SalaryService import SalaryService
 from core.services.CivilServantService import CivilServantService
 from core.services.JobDetailService import JobDetailService
+from core.services.SeedService import SeedService
 
 
 class SalaryDetailServiceTest(TestCase):
+
+    @classmethod
+    def setUpTestData(cls):
+        """
+        Seed Categorie/Grade/EchelonIndice reference data into the test DB.
+        Test DBs are created fresh and empty each run, so calculate_indice()
+        has nothing to look up unless we seed it here first.
+        """
+        SeedService.seed_categorie_grade_indice(force=True)
 
     def _q(self, value) -> Decimal:
         """Round a value to 2 decimal places (money precision)."""
@@ -29,7 +39,7 @@ class SalaryDetailServiceTest(TestCase):
                 "zone": "C",
                 "categorie": "technicien",
                 "grade": "3G",
-                "echelle": 9,
+                "echelle": "9",
                 "echelon": 9,
                 "mutuelle": "CNOPS",
             },
@@ -41,12 +51,9 @@ class SalaryDetailServiceTest(TestCase):
         )
 
         job_detail = JobDetailService.get_jobdetail(civil_servant=civil_servant)
-        # service = SalaryService(civil_servant)
 
         base_salary = SalaryService.get_base_salary(job_detail)
-        indemnities = SalaryService.get_indemnities(
-            job_detail, base_salary
-        )
+        indemnities = SalaryService.get_indemnities(job_detail, base_salary)
         tsp = SalaryService.get_TSP(base_salary, indemnities)
         family_allowance = SalaryService.get_AF(civil_servant.n_enfants)
         annual_gross_salary = self._q(tsp + family_allowance)  # TEA
@@ -80,9 +87,6 @@ class SalaryDetailServiceTest(TestCase):
         print(f"sm: {sm}")
         print(f"ccd: {ccd}")
         print(f"fos: {fos}")
-        # those field are for debugging let them be and just hide them:
-        # print(f"income_reduction (X%): {income_reduction}")
-        # print(f"taxable_income (T1): {taxable_income}")
         print(f"income_tax(IR): {income_tax}")
         print(f"net_salary: {net_salary}")
 
@@ -108,7 +112,5 @@ class SalaryDetailServiceTest(TestCase):
         self.assertEqual(amo, Decimal("184.92"))
         self.assertEqual(sm, Decimal("80.00"))
         self.assertEqual(ccd, Decimal("73.97"))
-        # self.assertEqual(income_reduction, Decimal("10317.88"))
-        # self.assertEqual(taxable_income, Decimal("13457.57"))
         self.assertEqual(income_tax, Decimal("0"))
         self.assertEqual(net_salary, Decimal("6242.22"))

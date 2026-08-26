@@ -66,6 +66,15 @@ class CivilServantRegistrationForm(forms.Form):
                 ).order_by("echelon")
             ]
 
+        for name, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, (forms.Select,)):
+                widget.attrs['class'] = 'form-select'
+            elif isinstance(widget, forms.CheckboxInput):
+                widget.attrs['class'] = 'form-check-input'
+            else:
+                widget.attrs['class'] = 'form-control'
+
     def clean_CIN(self):
         cin = self.cleaned_data["CIN"]
         if CivilServant.objects.filter(CIN=cin).exists():
