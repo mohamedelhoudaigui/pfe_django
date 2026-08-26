@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
-from core.services.CivilServantService import CivilServantService, JobDetailService
+from core.services.CivilServantService import CivilServantService, JobDetailService, SalaryService
 from core.models import CivilServant, Grade, EchelonIndice
 from django.contrib import messages
 from django.db import IntegrityError
@@ -41,10 +41,12 @@ def civil_servant_list(request):
 def civil_servant_detail(request, pk):
     civil_servant = CivilServantService.get_civil_servant_with_id(id=pk)
     job_detail = JobDetailService.get_jobdetail(civil_servant)
+    salary_detail = SalaryService.get_salary_with_id(id=pk)
     return render(
         request, "dashboard/civil_servant_detail.html", {
             "civil_servant": civil_servant,
             "job_detail": job_detail,
+            "salary_detail": salary_detail,
         },
     )
 

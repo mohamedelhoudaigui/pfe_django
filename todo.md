@@ -4,21 +4,16 @@
 
 # comply with our ONLY VALID TEST done
 
-# add civil servant status :
-
-# en activite
-# abandan de post
-# cange de maladie
-# decharge s'indicale
-# demission
-# detachement
-# l'esentiement
-# mise a disposition
-# mise an disponibilite
-# mutation
-# position militaire
-# stagaire
-# suspenstion provisoire
-
+# add civil servant status done
 
 # work on promotion
+
+# make profile better
+
+# overhaul the dashboard
+
+# add salary page
+
+# calculate how ancient some one is
+
+# start saving dates that someone got promoted into

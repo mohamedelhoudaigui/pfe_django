@@ -22,13 +22,12 @@ class CivilServantRegistrationForm(forms.Form):
 
     # --- JobDetail fields ---
     zone = forms.ChoiceField(choices=JobDetail.ZONES, label="Zone")
-
     categorie = forms.ChoiceField(label="Catégorie")
     grade = forms.ChoiceField(label="Grade", choices=[("", "---------")])
     echelon = forms.ChoiceField(label="Échelon", choices=[("", "---------")])
     echelle = forms.CharField(max_length=10, label="Échelle", required=False)
-
     mutuelle = forms.ChoiceField(choices=JobDetail.MUTUELLE, label="Mutuelle")
+    position = forms.ChoiceField(choices=JobDetail.POSITIONS, label="postion", initial="en_activite")
 
     # --- Login fields ---
     username = forms.CharField(max_length=150, label="Nom d'utilisateur")
@@ -130,6 +129,7 @@ class CivilServantRegistrationForm(forms.Form):
             "echelle": data.get("echelle") or "",
             "echelon": data["echelon"],
             "mutuelle": data["mutuelle"],
+            "position": data["position"]
         }
 
         login_data = {

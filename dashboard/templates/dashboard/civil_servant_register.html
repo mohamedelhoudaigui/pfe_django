@@ -87,6 +87,12 @@
                     {{ form.mutuelle.label_tag }}
                     {{ form.mutuelle }}
                 </div>
+
+                <div class="col-md-6">
+                    {{ form.position.label_tag }}
+                    {{ form.position }}
+                    {% for error in form.position.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                </div>
             </div>
         </div>
     </fieldset>

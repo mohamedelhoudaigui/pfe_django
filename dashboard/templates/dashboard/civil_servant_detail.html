@@ -1,8 +1,261 @@
-<div class="card mt-3">
-    <div class="card-body">
-        <h5 class="card-title">{{ civil_servant.nom }} {{ civil_servant.prenom }}</h5>
-        <p class="card-text mb-1"><strong>CIN:</strong> {{ civil_servant.CIN }}</p>
-        <p class="card-text mb-1"><strong>PPR:</strong> {{ civil_servant.PPR }}</p>
-        <p class="card-text mb-0"><strong>Job Detail:</strong> {{ job_detail.categorie }} - Grade {{ job_detail.grade }} - Echelon {{ job_detail.echelon }}</p>
+<!-- dashboard/templates/dashboard/civil_servant_detail.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ civil_servant.nom }} {{ civil_servant.prenom }} - Profile{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Back Button and Actions -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <a href="{% url 'dashboard:civil_servant_list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back to List
+            </a>
+        </div>
+        <div>
+            {% if user.is_superuser %}
+                <button class="btn btn-outline-warning" onclick="alert('Edit functionality coming soon')">
+                    <i class="bi bi-pencil"></i> Edit
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Header Card with Photo Placeholder -->
+    <div class="card shadow-sm mb-4 border-0">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="bg-primary bg-gradient text-white rounded-circle d-flex align-items-center justify-content-center" 
+                         style="width: 100px; height: 100px; font-size: 2.5rem; font-weight: 600;">
+                        {{ civil_servant.prenom|first }}{{ civil_servant.nom|first }}
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <h2 class="mb-0">{{ civil_servant.nom }} {{ civil_servant.prenom }}</h2>
+                        <span class="badge bg-secondary rounded-pill px-3 py-2">ID: {{ civil_servant.id }}</span>
+                        {% if civil_servant.user.is_superuser %}
+                            <span class="badge bg-danger rounded-pill px-3 py-2">Admin</span>
+                        {% endif %}
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-6 col-lg-4">
+                            <small class="text-muted d-block">CIN</small>
+                            <strong>{{ civil_servant.CIN }}</strong>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <small class="text-muted d-block">PPR</small>
+                            <strong>{{ civil_servant.PPR }}</strong>
+                        </div>
+                        <div class="col-md-6 col-lg-4">
+                            <small class="text-muted d-block">Username</small>
+                            <strong>{{ civil_servant.user.username }}</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Left Column - Personal Information -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-bottom d-flex align-items-center">
+                    <i class="bi bi-person-circle fs-4 me-2 text-primary"></i>
+                    <h5 class="card-title mb-0">Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted fw-normal">Full Name</dt>
+                        <dd class="col-sm-7 fw-semibold">{{ civil_servant.nom }} {{ civil_servant.prenom }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Date of Birth</dt>
+                        <dd class="col-sm-7">{{ civil_servant.date_de_naissance|date:"F d, Y" }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Place of Birth</dt>
+                        <dd class="col-sm-7">{{ civil_servant.lieu_de_naissance }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Gender</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge {% if civil_servant.genre == 'man' %}bg-info{% else %}bg-pink{% endif %}">
+                                <i class="bi {% if civil_servant.genre == 'man' %}bi-gender-male{% else %}bi-gender-female{% endif %} me-1"></i>
+                                {{ civil_servant.get_genre_display|title }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Marital Status</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-secondary">
+                                {{ civil_servant.get_situation_familiale_display|title }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Number of Children</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-warning text-dark rounded-pill px-3">{{ civil_servant.n_enfants }}</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Address</dt>
+                        <dd class="col-sm-7">{{ civil_servant.address|linebreaksbr }}</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Employment & Salary -->
+        <div class="col-lg-6">
+            <!-- Employment Card -->
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white border-bottom d-flex align-items-center">
+                    <i class="bi bi-briefcase fs-4 me-2 text-success"></i>
+                    <h5 class="card-title mb-0">Employment Details</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5 text-muted fw-normal">Category</dt>
+                        <dd class="col-sm-7 fw-semibold">{{ job_detail.categorie|title }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Grade</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge bg-primary">{{ job_detail.grade }}</span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Echelon</dt>
+                        <dd class="col-sm-7">{{ job_detail.echelon }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Indice</dt>
+                        <dd class="col-sm-7">{{ job_detail.indice }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Echelle</dt>
+                        <dd class="col-sm-7">{{ job_detail.echelle }}</dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Zone</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge {% if job_detail.zone == 'A' %}bg-danger{% elif job_detail.zone == 'B' %}bg-warning text-dark{% else %}bg-success{% endif %}">
+                                Zone {{ job_detail.get_zone_display }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Position</dt>
+                        <dd class="col-sm-7">
+                            <span class="badge {% if job_detail.position == 'en_activite' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ job_detail.get_position_display }}
+                            </span>
+                        </dd>
+
+                        <dt class="col-sm-5 text-muted fw-normal">Mutuelle</dt>
+                        <dd class="col-sm-7">{{ job_detail.get_mutuelle_display }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <!-- Salary Card -->
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom d-flex align-items-center">
+                    <i class="bi bi-wallet2 fs-4 me-2 text-warning"></i>
+                    <h5 class="card-title mb-0">Salary Details</h5>
+                </div>
+                <div class="card-body">
+                    {% if salary_detail %}
+                        <div class="row g-3">
+                            <!-- Monthly Salary -->
+                            <div class="col-md-6">
+                                <div class="bg-light rounded-3 p-3 text-center">
+                                    <small class="text-muted d-block">Monthly Gross</small>
+                                    <h4 class="mb-0 text-success">{{ salary_detail.monthly_gross_salary|floatformat:2 }} DH</h4>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="bg-light rounded-3 p-3 text-center">
+                                    <small class="text-muted d-block">Net Salary</small>
+                                    <h4 class="mb-0 text-primary">{{ salary_detail.net_salary|floatformat:2 }} DH</h4>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <small class="text-muted d-block">Base Salary</small>
+                                <strong>{{ salary_detail.base_salary|floatformat:2 }} DH</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Family Allowance</small>
+                                <strong>{{ salary_detail.family_allowance|floatformat:2 }} DH</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">TSP</small>
+                                <strong>{{ salary_detail.tsp|floatformat:2 }} DH</strong>
+                            </div>
+                            <div class="col-6">
+                                <small class="text-muted d-block">Income Tax (IR)</small>
+                                <strong class="text-danger">{{ salary_detail.income_tax|floatformat:2 }} DH</strong>
+                            </div>
+                        </div>
+
+                        {% if salary_detail.indemnities %}
+                            <hr>
+                            <small class="text-muted d-block mb-2">Indemnities</small>
+                            <div class="row g-2">
+                                {% for key, value in salary_detail.indemnities.items %}
+                                    <div class="col-6">
+                                        <small class="text-muted d-block">{{ key|title }}</small>
+                                        <strong>{{ value|floatformat:2 }} DH</strong>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <p class="text-muted mb-0">No salary data available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Audit Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body text-muted small">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <i class="bi bi-clock me-1"></i> Created: {{ civil_servant.created_at|date:"M d, Y H:i" }}
+                        </div>
+                        <div class="col-md-6">
+                            <i class="bi bi-pencil me-1"></i> Updated: {{ civil_servant.updated_at|date:"M d, Y H:i" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+<style>
+    .bg-pink {
+        background-color: #e83e8c;
+        color: white;
+    }
+    .bg-pink .bi {
+        color: white;
+    }
+    .bg-soft-primary {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    .bg-soft-success {
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+    .bg-soft-warning {
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    .bg-soft-danger {
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+</style>
+{% endblock %}

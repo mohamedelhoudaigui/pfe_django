@@ -4,22 +4,30 @@
         <tr>
             <th>CIN</th>
             <th>Name</th>
+            <th>PPR</th>
+            <th>Grade</th>
             <th></th>
         </tr>
     </thead>
     <tbody>
         {% for cs in civil_servants %}
         <tr>
-            <td>{{ cs.CIN }}</td>
+            <td><strong>{{ cs.CIN }}</strong></td>
             <td>{{ cs.nom }} {{ cs.prenom }}</td>
+            <td>{{ cs.PPR }}</td>
             <td>
-                <button class="btn btn-outline-primary btn-sm"
-                        hx-get="{% url 'dashboard:civil_servant_detail' cs.pk %}" hx-target="#detail-panel">
-                    View
-                </button>
+                {% if cs.JobDetail %}
+                    <span class="badge bg-info text-dark">{{ cs.JobDetail.grade }}</span>
+                {% else %}
+                    <span class="badge bg-secondary">N/A</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'dashboard:civil_servant_detail' cs.pk %}" class="btn btn-outline-primary btn-sm">
+                    <i class="bi bi-eye"></i> View Profile
+                </a>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<div id="detail-panel"></div>
