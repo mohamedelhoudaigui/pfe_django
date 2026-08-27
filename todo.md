@@ -6,13 +6,13 @@
 
 # add civil servant status done
 
-# work on promotion
+# make profile better done
 
-# make profile better
+# work on promotion
 
 # overhaul the dashboard
 
-# add salary page
+# add salary checking page
 
 # calculate how ancient some one is
 
